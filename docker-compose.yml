@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: lesson_server
+    volumes:
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-ppassword"]
+      interval: 3s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    command: 
+      - --default-authentication-plugin=mysql_native_password
+      - --wait_timeout=28800
+      - --interactive_timeout=28800
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ORIGIN: http://localhost:3000/
+      DB_USERNAME: root
+      DB_PASSWORD: password
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: lesson_server
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+    restart: on-failure
