@@ -14,6 +14,7 @@ import (
 type EntryStruct struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+	Team     int    `json:"team"`
 }
 
 func Entry(c *fiber.Ctx, db *db_core.DatabaseStruct) error {
@@ -32,18 +33,11 @@ func Entry(c *fiber.Ctx, db *db_core.DatabaseStruct) error {
 
 	user, err := db.GetOneUser("name = ?", username)
 	if err != nil {
-		count, err := db.CountTable(db_core.TableUsers)
-		if err != nil {
-			return c.Status(fiber.StatusConflict).JSON(fiber.Map{
-				"message": err,
-			})
-		}
-
 		newUser := db_core.UserStruct{
 			Name:     username,
 			Password: password,
 			Status:   constants.StudentStatus,
-			Team:     count%2 + 1,
+			Team:     entryData.Team,
 		}
 
 		userID, err = db.InsertUser(newUser)
@@ -55,7 +49,7 @@ func Entry(c *fiber.Ctx, db *db_core.DatabaseStruct) error {
 		userStatus = constants.StudentStatus
 	} else {
 		if user.Password != password {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 				"message": constants.ErrUserNotFound,
 			})
 		} else {

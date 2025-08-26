@@ -10,38 +10,40 @@ type QuestionStruct struct {
 	Question   string   `json:"question"`
 	Answers    []string `json:"answers"`
 	AnswerTrue string   `json:"answer_true"`
-	Socer      int   `json:"socer"`
+	Socer      int      `json:"socer"`
 }
 
-var Questions = []QuestionStruct{
-	{
+var Questions = map[string]QuestionStruct{
+	"Questions_1": {
 		ID:       "Questions_1",
-		Question: "Как дела?",
+		Question: "Пара объектов «Стены – Стены» общее количество геометрических коллизий в соответствии с матрицей пересечений:",
 		Answers: []string{
-			"Норм",
-			"Плохо",
-			"А ты как думаешь?",
-			"Как так?",
+			"0",
+			"2",
+			"3",
+			"5",
+			"6",
 		},
-		AnswerTrue: "Норм",
-		Socer:      1,
+		AnswerTrue: "2",
+		Socer:      5,
 	},
-	{
+	"Questions_2": {
 		ID:       "Questions_2",
-		Question: "А ты как?",
+		Question: "Пара объектов «Стены – Воздуховоды» общее количество геометрических коллизий в соответствии с матрицей пересечений:",
 		Answers: []string{
-			"Да так",
-			"Как как",
-			"Вот так",
-			"Окак",
+			"0",
+			"2",
+			"3",
+			"5",
+			"6",
 		},
-		AnswerTrue: "Окак",
-		Socer:      4,
+		AnswerTrue: "5",
+		Socer:      10,
 	},
 }
 
-var QuestionsTeam = []QuestionStruct{
-	{
+var QuestionsTeam = map[string]QuestionStruct{
+	"Questions_Team_1": {
 		ID:       "Questions_Team_1",
 		Question: "ОГО?",
 		Answers: []string{
@@ -53,7 +55,7 @@ var QuestionsTeam = []QuestionStruct{
 		AnswerTrue: "ОГООГО",
 		Socer:      1,
 	},
-	{
+	"Questions_Team_2": {
 		ID:       "Questions_Team_2",
 		Question: "АГА",
 		Answers: []string{

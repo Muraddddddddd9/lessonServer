@@ -18,9 +18,11 @@ type GetAnswer struct {
 	AnswerUser []AnswerStruct `json:"answer"`
 }
 
+var FastTest []int
+
 func AddBimCoin(getAnswer GetAnswer, test string) int {
 	var BimCoin int
-	var question []constants.QuestionStruct
+	var question map[string]constants.QuestionStruct
 
 	if test == constants.TestOneName {
 		question = constants.Questions
@@ -28,13 +30,16 @@ func AddBimCoin(getAnswer GetAnswer, test string) int {
 		question = constants.QuestionsTeam
 	}
 
-	for _, q := range question {
-		for _, a := range getAnswer.AnswerUser {
-			if q.ID == a.ID && q.AnswerTrue == a.Answer {
-				BimCoin += q.Socer
-				break
-			}
+	for _, a := range getAnswer.AnswerUser {
+		if question[a.ID].AnswerTrue == a.Answer {
+			BimCoin += question[a.ID].Socer
 		}
+	}
+
+	if BimCoin == 0 {
+		return BimCoin
+	} else {
+		BimCoin += 10 - len(FastTest)
 	}
 
 	return BimCoin
@@ -58,7 +63,7 @@ func CheckAnswer(c *fiber.Ctx, db *db_core.DatabaseStruct, test string, time *ws
 	}
 
 	if len(getAnswerUser.AnswerUser) != len(constants.Questions) {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		return c.Status(fiber.StatusConflict).JSON(fiber.Map{
 			"message": constants.ErrNoFullAnser,
 		})
 	}
@@ -73,7 +78,7 @@ func CheckAnswer(c *fiber.Ctx, db *db_core.DatabaseStruct, test string, time *ws
 	if test == constants.TestOneName {
 		user, err := db.GetOneUser("id = ?", id)
 		if err != nil {
-			return c.Status(fiber.StatusConflict).JSON(fiber.Map{
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 				"message": constants.ErrUserNotFound,
 			})
 		}
@@ -99,10 +104,11 @@ func CheckAnswer(c *fiber.Ctx, db *db_core.DatabaseStruct, test string, time *ws
 				"message": err.Error(),
 			})
 		}
+		FastTest = append(FastTest, id)
 	} else if test == constants.TestTwoName {
 		user, err := db.GetOneUser("id = ?", id)
 		if err != nil {
-			return c.Status(fiber.StatusConflict).JSON(fiber.Map{
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 				"message": constants.ErrUserNotFound,
 			})
 		}

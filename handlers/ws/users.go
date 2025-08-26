@@ -10,13 +10,6 @@ import (
 	"github.com/gofiber/contrib/websocket"
 )
 
-type SendUserDataStruct struct {
-	Username   string `json:"username"`
-	BimCoin    uint64 `json:"bim_coin"`
-	Team       int    `json:"team"`
-	TeamLeader bool   `json:"team_leader"`
-}
-
 var users []db_core.SendUserStruct
 
 func GetUsers(c *websocket.Conn, db *db_core.DatabaseStruct) {

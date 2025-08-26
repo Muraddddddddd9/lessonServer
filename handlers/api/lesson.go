@@ -23,7 +23,7 @@ func LessonChange(c *fiber.Ctx, db *db_core.DatabaseStruct) error {
 
 	err := db.UpdateData(db_core.TableSetting, "now_stage_lesson = ?", "", fmt.Sprintf("%d", action.Action))
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		return c.Status(fiber.StatusConflict).JSON(fiber.Map{
 			"message": err.Error(),
 		})
 	}

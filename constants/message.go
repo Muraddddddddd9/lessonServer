@@ -10,10 +10,10 @@ const (
 	ErrTeacherAlreadyExist = "Учитель уже создан"
 	ErrSettingAlreadyExist = "Настройки уже созданы"
 
-	ErrInputValue     = "Не верный ввод данных"
+	ErrInputValue     = "Неверный ввод данных"
 	ErrUserNotFound   = "Пользователь не найден"
 	ErrUserExit       = "Ошибка выхода"
-	ErrNotSendTest    = "Нельзя отправиьт тест"
+	ErrNotSendTest    = "Нельзя отправить ответ"
 	ErrNoFullAnser    = "Ответьте на все вопросы"
 	ErrAlreadyReplied = "Вы уже ответили на все вопросы"
 )

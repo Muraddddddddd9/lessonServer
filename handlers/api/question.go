@@ -14,7 +14,7 @@ type SendQuestionsStruct struct {
 	Socer    uint64   `json:"socer"`
 }
 
-func GetQuestions(c *fiber.Ctx, qst interface{}) error {
+func GetQuestions(c *fiber.Ctx, qst any) error {
 	questionsJSON, err := json.Marshal(qst)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -22,7 +22,7 @@ func GetQuestions(c *fiber.Ctx, qst interface{}) error {
 		})
 	}
 
-	var sendQuestions []SendQuestionsStruct
+	var sendQuestions map[string]SendQuestionsStruct
 	err = json.Unmarshal(questionsJSON, &sendQuestions)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

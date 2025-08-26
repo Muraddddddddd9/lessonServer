@@ -7,6 +7,7 @@ import (
 	"lesson_server/handlers/api"
 	"lesson_server/handlers/ws"
 
+	"github.com/gofiber/contrib/swagger"
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -113,6 +114,15 @@ func main() {
 		AllowOrigins:     cfg.ORIGIN,
 		AllowHeaders:     "Origin, Content-Type, Accept",
 		AllowMethods:     "GET, POST",
+	}))
+
+	app.Use(swagger.New(swagger.Config{
+		Next:     nil,
+		BasePath: "/",
+		FilePath: "./docs/swagger.json",
+		Path:     "docs",
+		Title:    "Fiber API documentation",
+		CacheAge: 0,
 	}))
 
 	apiG := app.Group("/api")
