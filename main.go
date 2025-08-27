@@ -61,6 +61,12 @@ func ApiGroup(apiG fiber.Router, db *db_core.DatabaseStruct) {
 	apiG.Post("/clear", Access(db, []string{constants.TeacherStatus}), func(c *fiber.Ctx) error {
 		return api.ClearData(c, db)
 	})
+
+	apiG.Get("/health", func(c *fiber.Ctx) error {
+		return c.Status(fiber.StatusAccepted).JSON(fiber.Map{
+			"message": "health",
+		})
+	})
 }
 
 func WsGroup(wsG fiber.Router, db *db_core.DatabaseStruct) {
