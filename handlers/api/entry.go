@@ -5,6 +5,7 @@ import (
 	"lesson_server/constants"
 	db_core "lesson_server/database"
 	"lesson_server/utils"
+	"strconv"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -14,7 +15,7 @@ import (
 type EntryStruct struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
-	Team     int    `json:"team"`
+	Team     string `json:"team"`
 }
 
 func Entry(c *fiber.Ctx, db *db_core.DatabaseStruct) error {
@@ -27,6 +28,7 @@ func Entry(c *fiber.Ctx, db *db_core.DatabaseStruct) error {
 
 	username := strings.TrimSpace(entryData.Username)
 	password := strings.TrimSpace(entryData.Password)
+	team, _ := strconv.Atoi(strings.TrimSpace(entryData.Team))
 
 	var userID int64
 	var userStatus string
@@ -37,7 +39,7 @@ func Entry(c *fiber.Ctx, db *db_core.DatabaseStruct) error {
 			Name:     username,
 			Password: password,
 			Status:   constants.StudentStatus,
-			Team:     entryData.Team,
+			Team:     team,
 		}
 
 		userID, err = db.InsertUser(newUser)
