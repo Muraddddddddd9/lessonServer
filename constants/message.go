@@ -10,12 +10,13 @@ const (
 	ErrTeacherAlreadyExist = "Учитель уже создан"
 	ErrSettingAlreadyExist = "Настройки уже созданы"
 
-	ErrInputValue     = "Неверный ввод данных"
-	ErrUserNotFound   = "Пользователь не найден"
-	ErrUserExit       = "Ошибка выхода"
-	ErrNotSendTest    = "Нельзя отправить ответ"
-	ErrNoFullAnser    = "Ответьте на все вопросы"
-	ErrAlreadyReplied = "Вы уже ответили на все вопросы"
+	ErrInputValue       = "Неверный ввод данных"
+	ErrUserNotFound     = "Пользователь не найден"
+	ErrUserExit         = "Ошибка выхода"
+	ErrNotSendTest      = "Нельзя отправить ответ"
+	ErrNoFullAnser      = "Ответьте на все вопросы"
+	ErrAlreadyReplied   = "Вы уже ответили на все вопросы"
+	ErrClearStageLesson = "Ошибка в очистке этапа урока"
 )
 
 const (
@@ -29,4 +30,6 @@ const (
 	SuccClearData            = "Данные очищены"
 	SuccTeacherExist         = "Учитель создан"
 	SuccSettingExist         = "Настройка создана"
+	SuccCleatStageLesson     = "Этап урока очищен"
+	SuccStudentDeleteById    = "Студент удалён"
 )

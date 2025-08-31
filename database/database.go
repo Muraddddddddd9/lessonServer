@@ -61,7 +61,7 @@ func (d *DatabaseStruct) GetUsers() ([]SendUserStruct, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
-	query := fmt.Sprintf("SELECT id, name, bim_coin, team FROM %s WHERE status = ?", TableUsers)
+	query := fmt.Sprintf("SELECT id, name, bim_coin, team FROM %s WHERE status = ? ORDER BY bim_coin DESC", TableUsers)
 	rows, err := d.db.QueryContext(ctx, query, constants.StudentStatus)
 	defer rows.Close()
 	if err != nil {
@@ -197,6 +197,20 @@ func (d DatabaseStruct) DeleteStudent() error {
 
 	query := fmt.Sprintf("DELETE FROM %s WHERE status = ?", TableUsers)
 	_, err := d.db.ExecContext(ctx, query, constants.StudentStatus)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// DELETE Удаление студентов по id
+func (d DatabaseStruct) DeleteUserByID(id string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	query := fmt.Sprintf("DELETE FROM %s WHERE id = ?", TableUsers)
+	_, err := d.db.ExecContext(ctx, query, id)
 	if err != nil {
 		return err
 	}

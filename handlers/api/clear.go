@@ -41,3 +41,45 @@ func ClearData(c *fiber.Ctx, db *db_core.DatabaseStruct) error {
 		"message": constants.SuccClearData,
 	})
 }
+
+func ClearStageLesson(c *fiber.Ctx, db *db_core.DatabaseStruct) error {
+	err := db.UpdateData(db_core.TableSetting, "now_stage_lesson = ?", "", "0")
+	if err != nil {
+		return c.Status(fiber.StatusConflict).JSON(fiber.Map{
+			"message": constants.ErrClearStageLesson,
+		})
+	}
+
+	constants.NewLesson = true
+
+	return c.Status(fiber.StatusAccepted).JSON(fiber.Map{
+		"message": constants.SuccCleatStageLesson,
+	})
+}
+
+type IDStudetn struct {
+	ID string `json:"id"`
+}
+
+func DeleteStudent(c *fiber.Ctx, db *db_core.DatabaseStruct) error {
+	var id IDStudetn
+
+	if err := c.BodyParser(&id); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": constants.ErrInputValue,
+		})
+	}
+
+	err := db.DeleteUserByID(id.ID)
+	if err != nil {
+		return c.Status(fiber.StatusConflict).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	constants.NewUsers = true
+
+	return c.Status(fiber.StatusAccepted).JSON(fiber.Map{
+		"message": constants.SuccStudentDeleteById,
+	})
+}
