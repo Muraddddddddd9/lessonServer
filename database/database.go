@@ -61,7 +61,7 @@ func (d *DatabaseStruct) GetUsers() ([]SendUserStruct, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
-	query := fmt.Sprintf("SELECT id, name, bim_coin, team FROM %s WHERE status = ? ORDER BY bim_coin DESC", TableUsers)
+	query := fmt.Sprintf("SELECT id, name, bim_coin, time_test, team FROM %s WHERE status = ? ORDER BY bim_coin DESC", TableUsers)
 	rows, err := d.db.QueryContext(ctx, query, constants.StudentStatus)
 	defer rows.Close()
 	if err != nil {
@@ -75,6 +75,7 @@ func (d *DatabaseStruct) GetUsers() ([]SendUserStruct, error) {
 			&user.ID,
 			&user.Name,
 			&user.BimCoin,
+			&user.TimeTest,
 			&user.Team,
 		)
 		if err != nil {
@@ -103,6 +104,7 @@ func (d *DatabaseStruct) GetOneUser(where string, arg ...any) (*UserStruct, erro
 		&user.BimCoin,
 		&user.Team,
 		&user.TestFirst,
+		&user.TimeTest,
 	)
 	if err != nil {
 		return nil, err

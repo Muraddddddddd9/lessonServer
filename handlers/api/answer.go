@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"lesson_server/constants"
 	db_core "lesson_server/database"
 	"lesson_server/handlers/ws"
@@ -48,6 +49,7 @@ func AddBimCoin(getAnswer GetAnswer, test string) int {
 func CheckAnswer(c *fiber.Ctx, db *db_core.DatabaseStruct, test string, time *ws.TimeData) error {
 	session := c.Cookies(constants.SessionKey)
 	min, sec, flag := time.GetDataTime()
+	timeText := fmt.Sprintf("%02d:%02d", *min, *sec)
 
 	if !*flag || (*min == 0 && *sec == 0) {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -75,7 +77,8 @@ func CheckAnswer(c *fiber.Ctx, db *db_core.DatabaseStruct, test string, time *ws
 		})
 	}
 
-	if test == constants.TestOneName {
+	switch test {
+	case constants.TestOneName:
 		user, err := db.GetOneUser("id = ?", id)
 		if err != nil {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
@@ -104,8 +107,15 @@ func CheckAnswer(c *fiber.Ctx, db *db_core.DatabaseStruct, test string, time *ws
 				"message": err.Error(),
 			})
 		}
+
+		err = db.UpdateData(db_core.TableUsers, "time_test = ?", "id = ?", timeText, id)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": err.Error(),
+			})
+		}
 		FastTest = append(FastTest, id)
-	} else if test == constants.TestTwoName {
+	case constants.TestTwoName:
 		user, err := db.GetOneUser("id = ?", id)
 		if err != nil {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
@@ -136,9 +146,10 @@ func CheckAnswer(c *fiber.Ctx, db *db_core.DatabaseStruct, test string, time *ws
 		}
 
 		var colume string
-		if user.Team == 1 {
+		switch user.Team {
+		case 1:
 			colume = "test_team_first = ?"
-		} else if user.Team == 2 {
+		case 2:
 			colume = "test_team_second = ?"
 		}
 

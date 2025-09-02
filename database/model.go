@@ -8,13 +8,15 @@ type UserStruct struct {
 	BimCoin   int    `json:"bim_coin"`
 	Team      int    `json:"team"`
 	TestFirst bool   `json:"test_first"`
+	TimeTest  string `json:"time_test"`
 }
 
 type SendUserStruct struct {
-	ID      int    `json:"id"`
-	Name    string `json:"name"`
-	BimCoin int    `json:"bim_coin"`
-	Team    int    `json:"team"`
+	ID       int    `json:"id"`
+	Name     string `json:"name"`
+	BimCoin  int    `json:"bim_coin"`
+	TimeTest string `json:"time_test"`
+	Team     int    `json:"team"`
 }
 
 type SettingStruct struct {

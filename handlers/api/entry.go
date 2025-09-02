@@ -30,6 +30,12 @@ func Entry(c *fiber.Ctx, db *db_core.DatabaseStruct) error {
 	password := strings.TrimSpace(entryData.Password)
 	team, _ := strconv.Atoi(strings.TrimSpace(entryData.Team))
 
+	if team != 2 && team != 1 {
+		c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": constants.ErrInputValue,
+		})
+	}
+
 	var userID int64
 	var userStatus string
 

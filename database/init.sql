@@ -20,13 +20,14 @@ CREATE TABLE `setting` (
 
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(45) NOT NULL,
   `password` varchar(255) NOT NULL,
   `status` varchar(45) NOT NULL,
-  `bim_coin` int(11) NOT NULL DEFAULT 0,
-  `team` int(11) NOT NULL,
-  `test_first` tinyint(1) NOT NULL DEFAULT 0,
+  `bim_coin` int NOT NULL DEFAULT '0',
+  `team` int NOT NULL,
+  `test_first` tinyint(1) NOT NULL DEFAULT '0',
+  `time_test` varchar(45) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name_UNIQUE` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
