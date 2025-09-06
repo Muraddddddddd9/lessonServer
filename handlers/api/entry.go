@@ -19,18 +19,24 @@ type EntryStruct struct {
 }
 
 func Entry(c *fiber.Ctx, db *db_core.DatabaseStruct) error {
+	pathLogg, methodLogg, ipLogg := c.Path(), c.Method(), c.IP()
+
 	var entryData EntryStruct
 	if err := c.BodyParser(&entryData); err != nil {
+		utils.LogginAPI(pathLogg, methodLogg, fiber.StatusBadRequest, ipLogg, entryData, constants.ErrInputValue)
 		c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": constants.ErrInputValue,
 		})
 	}
+
+	fmt.Print(entryData)
 
 	username := strings.TrimSpace(entryData.Username)
 	password := strings.TrimSpace(entryData.Password)
 	team, _ := strconv.Atoi(strings.TrimSpace(entryData.Team))
 
 	if team != 2 && team != 1 {
+		utils.LogginAPI(pathLogg, methodLogg, fiber.StatusBadRequest, ipLogg, entryData, constants.ErrInputValue)
 		c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": constants.ErrInputValue,
 		})
@@ -50,13 +56,15 @@ func Entry(c *fiber.Ctx, db *db_core.DatabaseStruct) error {
 
 		userID, err = db.InsertUser(newUser)
 		if err != nil {
+			utils.LogginAPI(pathLogg, methodLogg, fiber.StatusConflict, ipLogg, entryData, err.Error())
 			return c.Status(fiber.StatusConflict).JSON(fiber.Map{
-				"message": err,
+				"message": err.Error(),
 			})
 		}
 		userStatus = constants.StudentStatus
 	} else {
 		if user.Password != password {
+			utils.LogginAPI(pathLogg, methodLogg, fiber.StatusNotFound, ipLogg, entryData, constants.ErrUserNotFound)
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 				"message": constants.ErrUserNotFound,
 			})
@@ -70,6 +78,7 @@ func Entry(c *fiber.Ctx, db *db_core.DatabaseStruct) error {
 	sessionID := fmt.Sprintf("%v:%v", userID, encryptcookie.GenerateKey())
 	utils.AddCookie(c, sessionID, userStatus)
 
+	utils.LogginAPI(pathLogg, methodLogg, fiber.StatusAccepted, ipLogg, entryData, constants.SuccEntry)
 	return c.Status(fiber.StatusAccepted).JSON(fiber.Map{
 		"message":  constants.SuccEntry,
 		"redirect": "/lesson",

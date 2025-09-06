@@ -6,6 +6,7 @@ import (
 	db_core "lesson_server/database"
 	"lesson_server/handlers/api"
 	"lesson_server/handlers/ws"
+	"lesson_server/utils"
 
 	"github.com/gofiber/contrib/swagger"
 	"github.com/gofiber/contrib/websocket"
@@ -71,6 +72,7 @@ func ApiGroup(apiG fiber.Router, db *db_core.DatabaseStruct) {
 	})
 
 	apiG.Get("/health", func(c *fiber.Ctx) error {
+		utils.LogginAPI(c.Path(), c.Method(), fiber.StatusAccepted, c.IP(), nil, "health")
 		return c.Status(fiber.StatusAccepted).JSON(fiber.Map{
 			"message": "health",
 		})

@@ -3,6 +3,8 @@ package utils
 import (
 	"fmt"
 	"lesson_server/constants"
+	"log"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -70,4 +72,22 @@ func AddCookie(c *fiber.Ctx, sessionID, status string) {
 		SameSite: "Lax",
 		Path:     "/",
 	})
+}
+
+func LogginAPI(path, method string, status int, ip string, data any, message string) {
+	fileName := "logger.txt"
+	loggerStr := fmt.Sprintf("[%s]: %s - %s - %d - %s - %v - %s\n", time.Now().Format("2006-01-02 15:04:05"), path, method, status, ip, data, message)
+
+	file, err := os.OpenFile(fileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Println("[ERROR LOGGER]:", err.Error())
+		return
+	}
+	defer file.Close()
+
+	_, err = file.WriteString(loggerStr)
+	if err != nil {
+		log.Println("[ERROR LOGGER]:", err.Error())
+		return
+	}
 }

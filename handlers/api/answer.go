@@ -25,9 +25,10 @@ func AddBimCoin(getAnswer GetAnswer, test string) int {
 	var BimCoin int
 	var question map[string]constants.QuestionStruct
 
-	if test == constants.TestOneName {
+	switch test {
+	case constants.TestOneName:
 		question = constants.Questions
-	} else if test == constants.TestTwoName {
+	case constants.TestTwoName:
 		question = constants.QuestionsTeam
 	}
 
@@ -46,12 +47,40 @@ func AddBimCoin(getAnswer GetAnswer, test string) int {
 	return BimCoin
 }
 
+func calculateTimeDifference(minuteStart, secondStart, minuteEnd, secondEnd int) (int, int) {
+	startTotal := minuteStart*60 + secondStart
+	endTotal := minuteEnd*60 + secondEnd
+
+	diffSeconds := endTotal - startTotal
+	if diffSeconds < 0 {
+		diffSeconds = -diffSeconds
+	}
+
+	return diffSeconds / 60, diffSeconds % 60
+}
+
 func CheckAnswer(c *fiber.Ctx, db *db_core.DatabaseStruct, test string, time *ws.TimeData) error {
 	session := c.Cookies(constants.SessionKey)
 	min, sec, flag := time.GetDataTime()
-	timeText := fmt.Sprintf("%02d:%02d", *min, *sec)
+	minStart, secStart, _ := ws.TimeOnlyStart.GetDataTime()
+	diffMin, diffSec := calculateTimeDifference(*minStart, *secStart, *min, *sec)
+	timeText := fmt.Sprintf("%02d:%02d", diffMin, diffSec)
+
+	pathLogg, methodLogg, ipLogg := c.Path(), c.Method(), c.IP()
 
 	if !*flag || (*min == 0 && *sec == 0) {
+		utils.LogginAPI(pathLogg, methodLogg, fiber.StatusBadRequest, ipLogg,
+			struct {
+				session     string
+				timeTestNow string
+				timeTest    string
+			}{
+				session:     session,
+				timeTestNow: fmt.Sprintf("min: %d, sec: %d, flag: %t", *min, *sec, *flag),
+				timeTest:    fmt.Sprintf("minStart: %d, secStart: %d", *min, *sec),
+			},
+			constants.ErrNotSendTest,
+		)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": constants.ErrNotSendTest,
 		})
@@ -59,12 +88,40 @@ func CheckAnswer(c *fiber.Ctx, db *db_core.DatabaseStruct, test string, time *ws
 
 	var getAnswerUser GetAnswer
 	if err := c.BodyParser(&getAnswerUser); err != nil {
+		utils.LogginAPI(pathLogg, methodLogg, fiber.StatusInternalServerError, ipLogg,
+			struct {
+				session     string
+				timeTestNow string
+				timeTest    string
+				body        any
+			}{
+				session:     session,
+				timeTestNow: fmt.Sprintf("min: %d, sec: %d, flag: %t", *min, *sec, *flag),
+				timeTest:    fmt.Sprintf("minStart: %d, secStart: %d", *min, *sec),
+				body:        getAnswerUser,
+			},
+			constants.ErrInternalServer,
+		)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": constants.ErrInternalServer,
 		})
 	}
 
 	if len(getAnswerUser.AnswerUser) != len(constants.Questions) {
+		utils.LogginAPI(pathLogg, methodLogg, fiber.StatusConflict, ipLogg,
+			struct {
+				session     string
+				timeTestNow string
+				timeTest    string
+				body        any
+			}{
+				session:     session,
+				timeTestNow: fmt.Sprintf("min: %d, sec: %d, flag: %t", *min, *sec, *flag),
+				timeTest:    fmt.Sprintf("minStart: %d, secStart: %d", *min, *sec),
+				body:        getAnswerUser,
+			},
+			constants.ErrNoFullAnser,
+		)
 		return c.Status(fiber.StatusConflict).JSON(fiber.Map{
 			"message": constants.ErrNoFullAnser,
 		})
@@ -72,6 +129,20 @@ func CheckAnswer(c *fiber.Ctx, db *db_core.DatabaseStruct, test string, time *ws
 
 	id, err := utils.GetID(session)
 	if err != nil {
+		utils.LogginAPI(pathLogg, methodLogg, fiber.StatusInternalServerError, ipLogg,
+			struct {
+				session     string
+				timeTestNow string
+				timeTest    string
+				body        any
+			}{
+				session:     session,
+				timeTestNow: fmt.Sprintf("min: %d, sec: %d, flag: %t", *min, *sec, *flag),
+				timeTest:    fmt.Sprintf("minStart: %d, secStart: %d", *min, *sec),
+				body:        getAnswerUser,
+			},
+			err.Error(),
+		)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": err.Error(),
 		})
@@ -81,6 +152,20 @@ func CheckAnswer(c *fiber.Ctx, db *db_core.DatabaseStruct, test string, time *ws
 	case constants.TestOneName:
 		user, err := db.GetOneUser("id = ?", id)
 		if err != nil {
+			utils.LogginAPI(pathLogg, methodLogg, fiber.StatusNotFound, ipLogg,
+				struct {
+					session     string
+					timeTestNow string
+					timeTest    string
+					body        any
+				}{
+					session:     session,
+					timeTestNow: fmt.Sprintf("min: %d, sec: %d, flag: %t", *min, *sec, *flag),
+					timeTest:    fmt.Sprintf("minStart: %d, secStart: %d", *min, *sec),
+					body:        getAnswerUser,
+				},
+				constants.ErrUserNotFound,
+			)
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 				"message": constants.ErrUserNotFound,
 			})
@@ -96,6 +181,24 @@ func CheckAnswer(c *fiber.Ctx, db *db_core.DatabaseStruct, test string, time *ws
 
 		err = db.UpdateData(db_core.TableUsers, "bim_coin = bim_coin + ?", "id = ?", bimCoin, id)
 		if err != nil {
+			utils.LogginAPI(pathLogg, methodLogg, fiber.StatusInternalServerError, ipLogg,
+				struct {
+					session     string
+					timeTestNow string
+					timeTest    string
+					id          int
+					bim_coin    int
+					body        any
+				}{
+					session:     session,
+					timeTestNow: fmt.Sprintf("min: %d, sec: %d, flag: %t", *min, *sec, *flag),
+					timeTest:    fmt.Sprintf("minStart: %d, secStart: %d", *min, *sec),
+					id:          id,
+					bim_coin:    bimCoin,
+					body:        getAnswerUser,
+				},
+				err.Error(),
+			)
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"message": err.Error(),
 			})
@@ -103,6 +206,24 @@ func CheckAnswer(c *fiber.Ctx, db *db_core.DatabaseStruct, test string, time *ws
 
 		err = db.UpdateData(db_core.TableUsers, "test_first = ?", "id = ?", true, id)
 		if err != nil {
+			utils.LogginAPI(pathLogg, methodLogg, fiber.StatusInternalServerError, ipLogg,
+				struct {
+					session     string
+					timeTestNow string
+					timeTest    string
+					id          int
+					bim_coin    int
+					body        any
+				}{
+					session:     session,
+					timeTestNow: fmt.Sprintf("min: %d, sec: %d, flag: %t", *min, *sec, *flag),
+					timeTest:    fmt.Sprintf("minStart: %d, secStart: %d", *min, *sec),
+					id:          id,
+					bim_coin:    bimCoin,
+					body:        getAnswerUser,
+				},
+				err.Error(),
+			)
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"message": err.Error(),
 			})
@@ -110,6 +231,24 @@ func CheckAnswer(c *fiber.Ctx, db *db_core.DatabaseStruct, test string, time *ws
 
 		err = db.UpdateData(db_core.TableUsers, "time_test = ?", "id = ?", timeText, id)
 		if err != nil {
+			utils.LogginAPI(pathLogg, methodLogg, fiber.StatusInternalServerError, ipLogg,
+				struct {
+					session     string
+					timeTestNow string
+					timeTest    string
+					id          int
+					timeText    string
+					body        any
+				}{
+					session:     session,
+					timeTestNow: fmt.Sprintf("min: %d, sec: %d, flag: %t", *min, *sec, *flag),
+					timeTest:    fmt.Sprintf("minStart: %d, secStart: %d", *min, *sec),
+					id:          id,
+					timeText:    timeText,
+					body:        getAnswerUser,
+				},
+				err.Error(),
+			)
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"message": err.Error(),
 			})
@@ -163,6 +302,24 @@ func CheckAnswer(c *fiber.Ctx, db *db_core.DatabaseStruct, test string, time *ws
 
 	constants.NewUsers = true
 
+	utils.LogginAPI(pathLogg, methodLogg, fiber.StatusAccepted, ipLogg,
+		struct {
+			session     string
+			timeTestNow string
+			timeTest    string
+			id          int
+			timeText    string
+			body        any
+		}{
+			session:     session,
+			timeTestNow: fmt.Sprintf("min: %d, sec: %d, flag: %t", *min, *sec, *flag),
+			timeTest:    fmt.Sprintf("minStart: %d, secStart: %d", *min, *sec),
+			id:          id,
+			timeText:    timeText,
+			body:        getAnswerUser,
+		},
+		constants.SuccGetAnswer,
+	)
 	return c.Status(fiber.StatusAccepted).JSON(fiber.Map{
 		"message": constants.SuccGetAnswer,
 	})

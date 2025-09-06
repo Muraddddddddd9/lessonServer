@@ -78,6 +78,9 @@ func EditTime(c *fiber.Ctx, db *db_core.DatabaseStruct) error {
 		ws.TimeOnly.Flag = false
 		ws.TimeOnly.Minute = minute
 		ws.TimeOnly.Second = second
+
+		ws.TimeOnlyStart.Minute = minute
+		ws.TimeOnlyStart.Second = second
 	case constants.TestTwoName:
 		ws.TimeTeam.Flag = false
 		ws.TimeTeam.Minute = minute

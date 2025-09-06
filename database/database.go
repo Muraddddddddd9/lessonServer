@@ -56,6 +56,39 @@ func (d *DatabaseStruct) Close() error {
 	return d.db.Close()
 }
 
+// GET Получение всех пользователей со всеми данными
+func (d *DatabaseStruct) GetDataUsers(arg ...any) ([]UserStruct, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	query := fmt.Sprintf("SELECT * FROM %s WHERE status = ?", TableUsers)
+	rows, _ := d.db.QueryContext(ctx, query, constants.StudentStatus)
+	defer rows.Close()
+
+	var users []UserStruct
+
+	for rows.Next() {
+		var user UserStruct
+		err := rows.Scan(
+			&user.ID,
+			&user.Name,
+			&user.Password,
+			&user.Status,
+			&user.BimCoin,
+			&user.Team,
+			&user.TestFirst,
+			&user.TimeTest,
+		)
+
+		users = append(users, user)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return users, nil
+}
+
 // GET Получение всех пользователей
 func (d *DatabaseStruct) GetUsers() ([]SendUserStruct, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)

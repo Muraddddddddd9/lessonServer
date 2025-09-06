@@ -65,7 +65,8 @@ func GetTime(c *websocket.Conn, timeData *TimeData) {
 }
 
 var TimeLesson = CreateNewTime(45, 0, false)
-var TimeOnly = CreateNewTime(5, 0, false)
+var TimeOnly = CreateNewTime(3, 0, false)
+var TimeOnlyStart = CreateNewTime(3, 0, false)
 var TimeTeam = CreateNewTime(1, 0, false)
 
 func InitializeTimers() {
