@@ -31,7 +31,7 @@
                                         "example": "Password"
                                     },
                                     "team": {
-                                        "type": "integer",
+                                        "type": "string",
                                         "example": "1"
                                     }
                                 },
@@ -274,18 +274,16 @@
                                         "questions": {
                                             "type": "object",
                                             "example": {
-                                                "Questions_1": {
-                                                    "id": "Questions_1",
-                                                    "question": "Какое число?",
-                                                    "answers": [
-                                                        "0",
-                                                        "2",
-                                                        "3",
-                                                        "5",
-                                                        "6"
-                                                    ],
-                                                    "socer": 5
-                                                }
+                                                "id": "Questions_1",
+                                                "question": "Какое число?",
+                                                "answers": [
+                                                    "0",
+                                                    "2",
+                                                    "3",
+                                                    "5",
+                                                    "6"
+                                                ],
+                                                "socer": 5
                                             }
                                         }
                                     }

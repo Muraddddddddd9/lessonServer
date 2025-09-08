@@ -29,8 +29,6 @@ func Entry(c *fiber.Ctx, db *db_core.DatabaseStruct) error {
 		})
 	}
 
-	fmt.Print(entryData)
-
 	username := strings.TrimSpace(entryData.Username)
 	password := strings.TrimSpace(entryData.Password)
 	team, _ := strconv.Atoi(strings.TrimSpace(entryData.Team))

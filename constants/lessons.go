@@ -38,7 +38,7 @@ var Questions = map[string]QuestionStruct{
 			"6",
 		},
 		AnswerTrue: "5",
-		Socer:      10,
+		Socer:      5,
 	},
 }
 

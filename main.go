@@ -28,7 +28,7 @@ func ApiGroup(apiG fiber.Router, db *db_core.DatabaseStruct) {
 	})
 
 	apiG.Get("/questions", Access(db, []string{constants.TeacherStatus, constants.StudentStatus}), func(c *fiber.Ctx) error {
-		return api.GetQuestionsOnly(c)
+		return api.GetQuestionsOnly(c, db)
 	})
 
 	apiG.Get("/questions/team", Access(db, []string{constants.TeacherStatus, constants.StudentStatus}), func(c *fiber.Ctx) error {

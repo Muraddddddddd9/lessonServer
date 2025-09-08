@@ -107,7 +107,7 @@ func CheckAnswer(c *fiber.Ctx, db *db_core.DatabaseStruct, test string, time *ws
 		})
 	}
 
-	if len(getAnswerUser.AnswerUser) != len(constants.Questions) {
+	if len(getAnswerUser.AnswerUser) != 1 {
 		utils.LogginAPI(pathLogg, methodLogg, fiber.StatusConflict, ipLogg,
 			struct {
 				session     string
