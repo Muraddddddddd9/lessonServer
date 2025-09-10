@@ -66,6 +66,7 @@ func ClearData(c *fiber.Ctx, db *db_core.DatabaseStruct) error {
 	*minutCls = 45
 	*secondCls = 0
 	*flagCls = false
+	FastTest = []int{}
 
 	utils.LogginAPI(pathLogg, methodLogg, fiber.StatusAccepted, ipLogg,
 		fmt.Sprintf("\n%s\n", getUsersTableString(students)),

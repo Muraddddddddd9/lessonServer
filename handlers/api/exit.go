@@ -9,6 +9,8 @@ import (
 )
 
 func Exit(c *fiber.Ctx, db *db_core.DatabaseStruct) error {
+	pathLogg, methodLogg, ipLogg := c.Path(), c.Method(), c.IP()
+
 	session := c.Cookies(constants.SessionKey)
 	if session == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -19,6 +21,7 @@ func Exit(c *fiber.Ctx, db *db_core.DatabaseStruct) error {
 
 	utils.DeleteCookie(c)
 
+	utils.LogginAPI(pathLogg, methodLogg, fiber.StatusConflict, ipLogg, session, constants.SuccExit)
 	return c.Status(fiber.StatusAccepted).JSON(fiber.Map{
 		"message":  constants.SuccExit,
 		"redirect": "/",

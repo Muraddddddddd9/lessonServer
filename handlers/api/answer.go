@@ -40,8 +40,9 @@ func AddBimCoin(getAnswer GetAnswer, test string) int {
 
 	if BimCoin == 0 {
 		return BimCoin
-	} else {
-		BimCoin += 10 - len(FastTest)
+	} else if (len(FastTest) < 3) {
+		BimCoin += 3 - len(FastTest)
+
 	}
 
 	return BimCoin
@@ -178,6 +179,9 @@ func CheckAnswer(c *fiber.Ctx, db *db_core.DatabaseStruct, test string, time *ws
 		}
 
 		bimCoin := AddBimCoin(getAnswerUser, test)
+		if (bimCoin > 0) {
+			FastTest = append(FastTest, id)
+		}
 
 		err = db.UpdateData(db_core.TableUsers, "bim_coin = bim_coin + ?", "id = ?", bimCoin, id)
 		if err != nil {
@@ -253,7 +257,6 @@ func CheckAnswer(c *fiber.Ctx, db *db_core.DatabaseStruct, test string, time *ws
 				"message": err.Error(),
 			})
 		}
-		FastTest = append(FastTest, id)
 	case constants.TestTwoName:
 		user, err := db.GetOneUser("id = ?", id)
 		if err != nil {

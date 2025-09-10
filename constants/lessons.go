@@ -16,7 +16,7 @@ type QuestionStruct struct {
 var Questions = map[string]QuestionStruct{
 	"Questions_1": {
 		ID:       "Questions_1",
-		Question: "Пара объектов «Стены – Стены» общее количество геометрических коллизий в соответствии с матрицей пересечений:",
+		Question: "«Стены – Стены» количество геометрических коллизий в соответствии с матрицей пересечений:",
 		Answers: []string{
 			"0",
 			"2",
@@ -25,11 +25,11 @@ var Questions = map[string]QuestionStruct{
 			"6",
 		},
 		AnswerTrue: "2",
-		Socer:      5,
+		Socer:      10,
 	},
 	"Questions_2": {
 		ID:       "Questions_2",
-		Question: "Пара объектов «Стены – Воздуховоды» общее количество геометрических коллизий в соответствии с матрицей пересечений:",
+		Question: "«Стены – Воздуховоды» количество геометрических коллизий в соответствии с матрицей пересечений:",
 		Answers: []string{
 			"0",
 			"2",
@@ -38,7 +38,7 @@ var Questions = map[string]QuestionStruct{
 			"6",
 		},
 		AnswerTrue: "5",
-		Socer:      5,
+		Socer:      10,
 	},
 }
 

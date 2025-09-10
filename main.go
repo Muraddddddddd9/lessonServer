@@ -77,6 +77,12 @@ func ApiGroup(apiG fiber.Router, db *db_core.DatabaseStruct) {
 			"message": "health",
 		})
 	})
+
+	apiG.Get("/fast_test", func(c *fiber.Ctx) error {
+		return c.Status(fiber.StatusAccepted).JSON(fiber.Map{
+			"fast_test": api.FastTest,
+		})
+	})
 }
 
 func WsGroup(wsG fiber.Router, db *db_core.DatabaseStruct) {
@@ -102,7 +108,9 @@ func WsGroup(wsG fiber.Router, db *db_core.DatabaseStruct) {
 }
 
 func main() {
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		ProxyHeader: fiber.HeaderXForwardedFor,
+	})
 	cfg, err := config.ConfigLoad()
 	if err != nil {
 		panic(err)
