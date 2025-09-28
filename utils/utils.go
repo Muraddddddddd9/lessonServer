@@ -6,26 +6,57 @@ import (
 	"log"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 )
 
-func GetID(session string) (int, error) {
-	if strings.TrimSpace(session) == "" {
-		return 0, fmt.Errorf(constants.ErrUserNotFound)
+var secretKey = "SECRaqwem32mpomfwmfwlkm3034324klnlakndlnpq21230304923820938"
+
+func GenerateJWT(userID string) (string, error) {
+	claims := jwt.MapClaims{
+		"id":  userID,
+		"iat": time.Now().Unix(),
 	}
 
-	sessionSplit := strings.Split(session, ":")
-	if len(sessionSplit) < 2 {
-		return 0, fmt.Errorf(constants.ErrUserNotFound)
-	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	id, err := strconv.Atoi(sessionSplit[0])
+	tokenString, err := token.SignedString([]byte(secretKey))
 	if err != nil {
-		return 0, fmt.Errorf(constants.ErrUserNotFound)
+		return "", fmt.Errorf("ошибка подписи токена: %w", err)
 	}
+
+	return tokenString, nil
+}
+
+func VerifyJWT(tokenString string) (int, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("неожиданный метод подписи: %v", token.Header["alg"])
+		}
+		return []byte(secretKey), nil
+	})
+
+	if err != nil {
+		return 0, fmt.Errorf("ошибка парсинга токена: %w", err)
+	}
+
+	if !token.Valid {
+		return 0, fmt.Errorf("невалидный токен")
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return 0, fmt.Errorf("неверный формат claims")
+	}
+
+	idStr, ok := claims["id"].(string)
+	if !ok {
+		return 0, fmt.Errorf("ID не найден или неверного формата")
+	}
+
+	id, _ := strconv.Atoi(idStr)
 
 	return id, nil
 }

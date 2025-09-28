@@ -18,8 +18,10 @@ type DatabaseStruct struct {
 }
 
 var (
-	TableUsers   = "users"
-	TableSetting = "setting"
+	TableUsers         = "users"
+	TableSetting       = "setting"
+	TableAnswerTestTwo = "answer_test_two"
+	TableSuperUser     = "superuser"
 )
 
 // Подключение к БД
@@ -74,10 +76,12 @@ func (d *DatabaseStruct) GetDataUsers(arg ...any) ([]UserStruct, error) {
 			&user.Name,
 			&user.Password,
 			&user.Status,
-			&user.BimCoin,
+			&user.BimCoin1,
+			&user.BimCoin2,
 			&user.Team,
 			&user.TestFirst,
 			&user.TimeTest,
+			&user.BimTotal,
 		)
 
 		users = append(users, user)
@@ -94,7 +98,7 @@ func (d *DatabaseStruct) GetUsers() ([]SendUserStruct, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
-	query := fmt.Sprintf("SELECT id, name, bim_coin, time_test, team FROM %s WHERE status = ? ORDER BY bim_coin DESC", TableUsers)
+	query := fmt.Sprintf("SELECT id, name, bim_coin1, bim_coin2, time_test, team, bim_total FROM %s WHERE status = ? ORDER BY bim_total DESC", TableUsers)
 	rows, err := d.db.QueryContext(ctx, query, constants.StudentStatus)
 	defer rows.Close()
 	if err != nil {
@@ -107,12 +111,42 @@ func (d *DatabaseStruct) GetUsers() ([]SendUserStruct, error) {
 		err = rows.Scan(
 			&user.ID,
 			&user.Name,
-			&user.BimCoin,
+			&user.BimCoin1,
+			&user.BimCoin2,
 			&user.TimeTest,
 			&user.Team,
+			&user.BimTotal,
 		)
 		if err != nil {
 			log.Printf("Функция GetUsers(), ошибка данных: %v", user)
+			continue
+		}
+
+		users = append(users, user)
+	}
+
+	return users, nil
+}
+
+func (d *DatabaseStruct) GetTeamUser(team int) ([]SendUserStruct, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	query := fmt.Sprintf("SELECT name FROM %s WHERE team = ? ", TableUsers)
+	rows, err := d.db.QueryContext(ctx, query, team)
+	defer rows.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	var users []SendUserStruct
+	for rows.Next() {
+		var user SendUserStruct
+		err = rows.Scan(
+			&user.Name,
+		)
+		if err != nil {
+			log.Printf("Функция GetTeamUser(), ошибка данных: %v", user)
 			continue
 		}
 
@@ -134,10 +168,12 @@ func (d *DatabaseStruct) GetOneUser(where string, arg ...any) (*UserStruct, erro
 		&user.Name,
 		&user.Password,
 		&user.Status,
-		&user.BimCoin,
+		&user.BimCoin1,
+		&user.BimCoin2,
 		&user.Team,
 		&user.TestFirst,
 		&user.TimeTest,
+		&user.BimTotal,
 	)
 	if err != nil {
 		return nil, err
@@ -161,21 +197,69 @@ func (d *DatabaseStruct) GetSetting() (*SettingStruct, error) {
 	return &setting, nil
 }
 
+// GET Получение Ответов на второй тест
+func (d *DatabaseStruct) GetAnswerTaskTwo(team int) (*AnswerTaskTwo, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	query := fmt.Sprintf("SELECT * FROM %s WHERE team = ?", TableAnswerTestTwo)
+	var setting AnswerTaskTwo
+	err := d.db.QueryRowContext(ctx, query, team).Scan(
+		&setting.Team,
+		&setting.ConflictElements,
+		&setting.Visualization1,
+		&setting.Visualization2,
+		&setting.Visualization3,
+		&setting.MatrixFile,
+		&setting.CollisionsCount,
+		&setting.Priority,
+		&setting.RiskAssessment,
+		&setting.Consequences,
+		&setting.Problems,
+		&setting.Specialists,
+		&setting.Stage,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &setting, nil
+}
+
+// GET Получение суперпользователя
+func (d *DatabaseStruct) GetSuperUser(username string) (*SuperUserSturct, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	query := fmt.Sprintf("SELECT password FROM %s WHERE username = ?", TableSuperUser)
+	var user SuperUserSturct
+	err := d.db.QueryRowContext(ctx, query, username).Scan(
+		&user.Password,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
 // INSERT Добавление новых пользователей
 func (d *DatabaseStruct) InsertUser(newUser UserStruct) (int64, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
-	query := fmt.Sprintf("INSERT INTO %s (name, password, status, bim_coin, team, test_first) VALUES (?,?,?,?,?,?)", TableUsers)
+	query := fmt.Sprintf("INSERT INTO %s (name, password, status, bim_coin1, bim_coin2, team, test_first, bim_total) VALUES (?,?,?,?,?,?,?,?)", TableUsers)
 	result, err := d.db.ExecContext(
 		ctx,
 		query,
 		newUser.Name,
 		newUser.Password,
 		newUser.Status,
-		newUser.BimCoin,
+		newUser.BimCoin1,
+		newUser.BimCoin2,
 		newUser.Team,
 		newUser.TestFirst,
+		newUser.BimTotal,
 	)
 	if err != nil {
 		return 0, err
@@ -205,6 +289,38 @@ func (d *DatabaseStruct) InsertSetting(newSetting SettingStruct) error {
 	return nil
 }
 
+// INSERT/UPDATE Добавление ответа студента
+func (d *DatabaseStruct) UpsertAnswerTaskTwo(team int, keys []string, values ...any) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	qs := make([]string, len(keys))
+	for i := range qs {
+		qs[i] = "?"
+	}
+
+	updateParts := make([]string, len(keys))
+	for i, k := range keys {
+		updateParts[i] = fmt.Sprintf("%s=VALUES(%s)", k, k)
+	}
+
+	query := fmt.Sprintf(
+		"INSERT INTO %s (%s, team) VALUES (%s, ?) ON DUPLICATE KEY UPDATE %s",
+		TableAnswerTestTwo,
+		strings.Join(keys, ", "),
+		strings.Join(qs, ", "),
+		strings.Join(updateParts, ", "),
+	)
+
+	args := append(values, team)
+
+	_, err := d.db.ExecContext(ctx, query, args...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // UPDATE Обновление данных
 func (d *DatabaseStruct) UpdateData(table, column string, where string, arg ...any) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
@@ -226,7 +342,7 @@ func (d *DatabaseStruct) UpdateData(table, column string, where string, arg ...a
 }
 
 // DELETE Удаление только студентов
-func (d DatabaseStruct) DeleteStudent() error {
+func (d *DatabaseStruct) DeleteStudent() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
@@ -240,7 +356,7 @@ func (d DatabaseStruct) DeleteStudent() error {
 }
 
 // DELETE Удаление студентов по id
-func (d DatabaseStruct) DeleteUserByID(id string) error {
+func (d *DatabaseStruct) DeleteUserByID(id string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
@@ -253,8 +369,22 @@ func (d DatabaseStruct) DeleteUserByID(id string) error {
 	return nil
 }
 
+// DELETE Удаление ответа на второй вопрос
+func (d *DatabaseStruct) DeleteAllAnswerTestTwo() error {
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	query := fmt.Sprintf("DELETE FROM %s", TableAnswerTestTwo)
+	_, err := d.db.ExecContext(ctx, query)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // COUNT Кол-во данных в таблице
-func (d DatabaseStruct) CountTable(table string) (int, error) {
+func (d *DatabaseStruct) CountTable(table string) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 

@@ -1,12 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"lesson_server/config"
 	"lesson_server/constants"
 	db_core "lesson_server/database"
 	"lesson_server/handlers/api"
 	"lesson_server/handlers/ws"
 	"lesson_server/utils"
+	"os"
 
 	"github.com/gofiber/contrib/swagger"
 	"github.com/gofiber/contrib/websocket"
@@ -15,59 +17,63 @@ import (
 )
 
 func ApiGroup(apiG fiber.Router, db *db_core.DatabaseStruct) {
-	apiG.Post("/entry", func(c *fiber.Ctx) error {
+	apiG.Post("/entry_system", func(c *fiber.Ctx) error {
+		return api.LoginSystem(c, db)
+	})
+
+	apiG.Post("/entry", AccessToken(), func(c *fiber.Ctx) error {
 		return api.Entry(c, db)
 	})
 
-	apiG.Post("/exit", Access(db, []string{constants.TeacherStatus, constants.StudentStatus}), func(c *fiber.Ctx) error {
+	apiG.Post("/exit", AccessToken(), Access(db, []string{constants.TeacherStatus, constants.StudentStatus}), func(c *fiber.Ctx) error {
 		return api.Exit(c, db)
 	})
 
-	apiG.Post("/lesson", Access(db, []string{constants.TeacherStatus}), func(c *fiber.Ctx) error {
+	apiG.Post("/lesson", AccessToken(), Access(db, []string{constants.TeacherStatus}), func(c *fiber.Ctx) error {
 		return api.LessonChange(c, db)
 	})
 
-	apiG.Get("/questions", Access(db, []string{constants.TeacherStatus, constants.StudentStatus}), func(c *fiber.Ctx) error {
+	apiG.Get("/questions", AccessToken(), Access(db, []string{constants.TeacherStatus, constants.StudentStatus}), func(c *fiber.Ctx) error {
 		return api.GetQuestionsOnly(c, db)
 	})
 
-	apiG.Get("/questions/team", Access(db, []string{constants.TeacherStatus, constants.StudentStatus}), func(c *fiber.Ctx) error {
-		return api.GetQuestionsTeam(c)
-	})
-
-	apiG.Post("/answer", Access(db, []string{constants.TeacherStatus, constants.StudentStatus}), func(c *fiber.Ctx) error {
+	apiG.Post("/answer", AccessToken(), Access(db, []string{constants.TeacherStatus, constants.StudentStatus}), func(c *fiber.Ctx) error {
 		return api.CheckAnswerOnly(c, db)
 	})
 
-	apiG.Post("/answer/team", Access(db, []string{constants.TeacherStatus, constants.StudentStatus}), func(c *fiber.Ctx) error {
+	apiG.Post("/answer/team", AccessToken(), Access(db, []string{constants.TeacherStatus, constants.StudentStatus}), func(c *fiber.Ctx) error {
 		return api.CheckAnswerTeam(c, db)
 	})
 
-	apiG.Post("/time", Access(db, []string{constants.TeacherStatus}), func(c *fiber.Ctx) error {
+	apiG.Post("/score", AccessToken(), Access(db, []string{constants.TeacherStatus, constants.StudentStatus}), func(c *fiber.Ctx) error {
+		return api.ScoreTeam(c, db)
+	})
+
+	apiG.Post("/time", AccessToken(), Access(db, []string{constants.TeacherStatus}), func(c *fiber.Ctx) error {
 		return api.ChangeTime(c, db)
 	})
 
-	apiG.Post("/time/edit", Access(db, []string{constants.TeacherStatus}), func(c *fiber.Ctx) error {
+	apiG.Post("/time/edit", AccessToken(), Access(db, []string{constants.TeacherStatus}), func(c *fiber.Ctx) error {
 		return api.EditTime(c, db)
 	})
 
-	apiG.Post("/presentation", Access(db, []string{constants.TeacherStatus}), func(c *fiber.Ctx) error {
+	apiG.Post("/presentation", AccessToken(), Access(db, []string{constants.TeacherStatus}), func(c *fiber.Ctx) error {
 		return api.EditPresentation(c, db)
 	})
 
-	apiG.Get("/presentation", Access(db, []string{constants.TeacherStatus, constants.StudentStatus}), func(c *fiber.Ctx) error {
+	apiG.Get("/presentation", AccessToken(), Access(db, []string{constants.TeacherStatus, constants.StudentStatus}), func(c *fiber.Ctx) error {
 		return api.GetPresentation(c, db)
 	})
 
-	apiG.Post("/clear", Access(db, []string{constants.TeacherStatus}), func(c *fiber.Ctx) error {
+	apiG.Post("/clear", AccessToken(), Access(db, []string{constants.TeacherStatus}), func(c *fiber.Ctx) error {
 		return api.ClearData(c, db)
 	})
 
-	apiG.Post("/clear/lesson", Access(db, []string{constants.TeacherStatus}), func(c *fiber.Ctx) error {
+	apiG.Post("/clear/lesson", AccessToken(), Access(db, []string{constants.TeacherStatus}), func(c *fiber.Ctx) error {
 		return api.ClearStageLesson(c, db)
 	})
 
-	apiG.Post("/clear/student", Access(db, []string{constants.TeacherStatus}), func(c *fiber.Ctx) error {
+	apiG.Post("/clear/student", AccessToken(), Access(db, []string{constants.TeacherStatus}), func(c *fiber.Ctx) error {
 		return api.DeleteStudent(c, db)
 	})
 
@@ -82,6 +88,27 @@ func ApiGroup(apiG fiber.Router, db *db_core.DatabaseStruct) {
 		return c.Status(fiber.StatusAccepted).JSON(fiber.Map{
 			"fast_test": api.FastTest,
 		})
+	})
+
+	apiG.Get("/get_file/:group", AccessToken(), Access(db, []string{constants.TeacherStatus, constants.StudentStatus}), func(c *fiber.Ctx) error {
+		group := c.Params("group")
+		return c.SendFile(fmt.Sprintf("pr2/file_%s.docx", group))
+	})
+
+	apiG.Get("/file/download/:group", AccessToken(), Access(db, []string{constants.TeacherStatus, constants.StudentStatus}), func(c *fiber.Ctx) error {
+		group := c.Params("group")
+		filename := fmt.Sprintf("pr2/file_%s.docx", group)
+
+		if _, err := os.Stat(filename); os.IsNotExist(err) {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"message": "Файл не существует",
+			})
+		}
+
+		c.Set("Content-Disposition", fmt.Sprintf("attachment; filename=file_%s.docx", group))
+		c.Set("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+
+		return c.SendFile(filename)
 	})
 }
 
@@ -110,7 +137,10 @@ func WsGroup(wsG fiber.Router, db *db_core.DatabaseStruct) {
 func main() {
 	app := fiber.New(fiber.Config{
 		ProxyHeader: fiber.HeaderXForwardedFor,
+		BodyLimit:   50 * 1024 * 1024,
 	})
+	app.Static("/pr2", "./pr2")
+
 	cfg, err := config.ConfigLoad()
 	if err != nil {
 		panic(err)

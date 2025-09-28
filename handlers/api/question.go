@@ -17,9 +17,27 @@ type SendQuestionsStruct struct {
 	Socer    uint64   `json:"socer"`
 }
 
-func GetQuestions(c *fiber.Ctx, qst any) error {
-	questionsJSON, err := json.Marshal(qst)
+func GetQuestionsOnly(c *fiber.Ctx, db *db_core.DatabaseStruct) error {
+	groupUser := c.Cookies(constants.SessionKey)
+	id, err := utils.VerifyJWT(groupUser)
 
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	user, err := db.GetOneUser("id = ?", id)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	keyQuestion := fmt.Sprintf("Questions_%d", user.Team)
+	question := constants.Questions[keyQuestion]
+	
+	questionsJSON, err := json.Marshal(question)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": constants.ErrInternalServer,
@@ -37,29 +55,4 @@ func GetQuestions(c *fiber.Ctx, qst any) error {
 	return c.Status(fiber.StatusAccepted).JSON(fiber.Map{
 		"questions": sendQuestions,
 	})
-}
-
-func GetQuestionsOnly(c *fiber.Ctx, db *db_core.DatabaseStruct) error {
-	groupUser := c.Cookies(constants.SessionKey)
-	id, err := utils.GetID(groupUser)
-
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": err.Error(),
-		})
-	}
-
-	user, err := db.GetOneUser("id = ?", id)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": err.Error(),
-		})
-	}
-
-	keyQuestion := fmt.Sprintf("Questions_%d", user.Team)
-	question := constants.Questions[keyQuestion]
-	return GetQuestions(c, question)
-}
-func GetQuestionsTeam(c *fiber.Ctx) error {
-	return GetQuestions(c, constants.QuestionsTeam)
 }

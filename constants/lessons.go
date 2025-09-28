@@ -41,30 +41,3 @@ var Questions = map[string]QuestionStruct{
 		Socer:      10,
 	},
 }
-
-var QuestionsTeam = map[string]QuestionStruct{
-	"Questions_Team_1": {
-		ID:       "Questions_Team_1",
-		Question: "ОГО?",
-		Answers: []string{
-			"1",
-			"2",
-			"ОГООГО",
-			"3",
-		},
-		AnswerTrue: "ОГООГО",
-		Socer:      1,
-	},
-	"Questions_Team_2": {
-		ID:       "Questions_Team_2",
-		Question: "АГА",
-		Answers: []string{
-			"Ок",
-			"Нет",
-			"Как",
-			"OKAK",
-		},
-		AnswerTrue: "Как",
-		Socer:      4,
-	},
-}

@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"lesson_server/constants"
 	db_core "lesson_server/database"
 	"lesson_server/utils"
@@ -9,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/encryptcookie"
 )
 
 type EntryStruct struct {
@@ -24,7 +22,7 @@ func Entry(c *fiber.Ctx, db *db_core.DatabaseStruct) error {
 	var entryData EntryStruct
 	if err := c.BodyParser(&entryData); err != nil {
 		utils.LogginAPI(pathLogg, methodLogg, fiber.StatusBadRequest, ipLogg, entryData, constants.ErrInputValue)
-		c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": constants.ErrInputValue,
 		})
 	}
@@ -35,7 +33,7 @@ func Entry(c *fiber.Ctx, db *db_core.DatabaseStruct) error {
 
 	if team != 2 && team != 1 {
 		utils.LogginAPI(pathLogg, methodLogg, fiber.StatusBadRequest, ipLogg, entryData, constants.ErrInputValue)
-		c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": constants.ErrInputValue,
 		})
 	}
@@ -73,7 +71,7 @@ func Entry(c *fiber.Ctx, db *db_core.DatabaseStruct) error {
 	}
 
 	constants.NewUsers = true
-	sessionID := fmt.Sprintf("%v:%v", userID, encryptcookie.GenerateKey())
+	sessionID, err := utils.GenerateJWT(strconv.Itoa(int(userID)))
 	utils.AddCookie(c, sessionID, userStatus)
 
 	utils.LogginAPI(pathLogg, methodLogg, fiber.StatusAccepted, ipLogg, entryData, constants.SuccEntry)

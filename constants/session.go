@@ -1,8 +1,10 @@
 package constants
 
 const (
-	SessionKey = "session"
-	StatusKey  = "status"
+	SessionKey     = "session"
+	StatusKey      = "status"
+	AuthKey        = "AUTH"
+	TokenCheckAuth = 6786463395198560
 )
 
 const (

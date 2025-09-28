@@ -3,11 +3,14 @@ module lesson_server
 go 1.24.2
 
 require (
+	baliance.com/gooxml v1.0.1
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/gofiber/contrib/swagger v1.3.0
 	github.com/gofiber/contrib/websocket v1.3.4
 	github.com/gofiber/fiber/v2 v2.52.8
+	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/joho/godotenv v1.5.1
+	github.com/olekukonko/tablewriter v1.0.9
 )
 
 require (
@@ -16,6 +19,8 @@ require (
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
 	github.com/fasthttp/websocket v1.5.8 // indirect
 	github.com/fatih/color v1.15.0 // indirect
+	github.com/fumiama/go-docx v0.0.0-20250506085032-0c30fd09304b // indirect
+	github.com/fumiama/imgsz v0.0.2 // indirect
 	github.com/go-openapi/analysis v0.21.4 // indirect
 	github.com/go-openapi/errors v0.20.4 // indirect
 	github.com/go-openapi/jsonpointer v0.20.0 // indirect
@@ -37,7 +42,6 @@ require (
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/olekukonko/errors v1.1.0 // indirect
 	github.com/olekukonko/ll v0.0.9 // indirect
-	github.com/olekukonko/tablewriter v1.0.9 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/savsgio/gotils v0.0.0-20240303185622-093b76447511 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect

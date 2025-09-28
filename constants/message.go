@@ -14,9 +14,11 @@ const (
 	ErrUserNotFound     = "Пользователь не найден"
 	ErrUserExit         = "Ошибка выхода"
 	ErrNotSendTest      = "Нельзя отправить ответ"
-	ErrNoFullAnser      = "Ответьте на все вопросы"
+	ErrNoFullAnswer     = "Ответьте на все вопросы"
 	ErrAlreadyReplied   = "Вы уже ответили на все вопросы"
+	ErrScoreTeam        = "Вы уже отправили баллы"
 	ErrClearStageLesson = "Ошибка в очистке этапа урока"
+	ErrUserEntry        = "Ошибка входа в систему"
 )
 
 const (
@@ -32,4 +34,5 @@ const (
 	SuccSettingExist         = "Настройка создана"
 	SuccCleatStageLesson     = "Этап урока очищен"
 	SuccStudentDeleteById    = "Студент удалён"
+	SuccScoreTeam            = "Баллы получены"
 )
